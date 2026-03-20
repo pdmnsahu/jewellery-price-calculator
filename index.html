@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jewellery Rate Calculator</title>
+<style>
+
+  @font-face {
+  font-family: 'Rajdhani';
+  src: url('fonts/Rajdhani-Regular.ttf') format('truetype');
+  font-weight: 400;
+  }
+  
+  @font-face {
+    font-family: 'Rajdhani';
+    src: url('fonts/Rajdhani-Bold.ttf') format('truetype');
+    font-weight: 700;
+  }
+
+  /* ── Palette from screenshot ──
+     Body bg:          #8a7510  (olive gold)
+     Title bar bg:     #1e1a00  (near-black warm)
+     Title text:       #d4a820  (gold)
+     Dark section:     #2a2a2a  (charcoal)
+     Medium dark:      #3a3a3a  (dark grey)
+     Col header:       #4a4a40  (dark olive grey)
+     Red block:        #c0301a  (deep red)
+     Green subtotal:   #1a5c1a  (forest green)
+     Near-black row:   #1a1a1a  (near black)
+     White text:       #ffffff
+     Muted text:       #aaaaaa
+     Gold accent:      #d4a820
+  ── */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #8a7510;
+    font-family: 'Rajdhani', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 16px 0;
+  }
+
+  /* All full-width bars */
+  .title-bar {
+    width: 100vw;
+    max-width: 100vw;
+  }
+  .actions-bar {
+    width: calc(100vw - 32px);
+    max-width: 1200px;
+  }
+
+  /* Title bar — dark warm black with gold text, exactly like screenshot */
+  .title-bar {
+    background: #000000;
+    color: #d4a820;
+    text-align: center;
+    padding: 6px 16px;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .title-bar img {
+    height: 44px;
+    width: auto;
+    flex-shrink: 0;
+  }
+  .title-bar-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+  }
+  .title-brand-sub {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: #c8aa30;
+    text-transform: uppercase;
+  }
+  .title-brand-main {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #d4a820;
+    text-transform: uppercase;
+  }
+  .title-brand-jewellers {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: #c8aa30;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* Rate input cells — dark charcoal, inside the grid */
+  .rate-cell {
+    background: #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+  }
+  .rate-cell label {
+    color: #aaaaaa;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .rate-cell input {
+    background: #1a1a1a;
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 6px 8px;
+    font-family: 'Rajdhani', Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .rate-cell input::-webkit-outer-spin-button,
+  .rate-cell input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .rate-cell input:focus { border-color: #d4a820; }
+
+  /* 3-column main grid — olive gold gap, no outer side padding */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    width: calc(100vw - 32px);
+    max-width: 1200px;
+    background: #8a7510;
+    padding: 8px 0;
+  }
+
+  /* Making charge input cell inside the grid */
+  .making-input-cell {
+    background: #3a3a3a;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    flex-wrap: nowrap;
+  }
+  .making-input-cell .mc-label {
+    color: #888888;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-right: 2px;
+  }
+  .making-input-cell input {
+    background: #1a1a1a;
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 3px 4px;
+    font-family: 'Rajdhani', Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    width: 44px;
+    text-align: right;
+    outline: none;
+    flex-shrink: 0;
+    -moz-appearance: textfield;
+  }
+  .making-input-cell input::-webkit-outer-spin-button,
+  .making-input-cell input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .making-input-cell input:focus { border-color: #d4a820; }
+  .making-input-cell .mc-unit {
+    color: #d4a820;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .making-input-cell .mc-sep {
+    color: #555;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .making-input-cell .mc-calc {
+    color: #bbbbbb;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: right;
+    flex: 1;
+    white-space: nowrap;
+    padding-left: 2px;
+  }
+
+  /* Column header — dark olive grey like "916 HM / 750 HM / SILVER" */
+  .col-header {
+    background: #4a4a40;
+    color: #ffffff;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Price per gram row — dark grey */
+  .info-row.rate-info {
+    background: #3a3a3a;
+  }
+  .info-row.rate-info .ir-label { color: #888888; }
+  .info-row.rate-info .ir-val   { color: #ffffff; font-size: 14px; }
+
+  /* Making per gram row */
+  .info-row.making-pg-info {
+    background: #2a2a2a;
+    border-bottom: 2px solid #8a7510;
+  }
+  .info-row.making-pg-info .ir-label { color: #888888; }
+  .info-row.making-pg-info .ir-val   { color: #d4a820; font-size: 13px; }
+
+  /* Final total — deep red, big block */
+  .final-total-block {
+    background: #c0301a;
+    color: #ffffff;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    padding: 4px 4px;
+    letter-spacing: 1px;
+  }
+  .final-total-block .ft-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #ffbbaa;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* Info row base styles */
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+  }
+  .info-row .ir-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .info-row .ir-val {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* Making total row — dark grey with gold value */
+  .info-row.making-total {
+    background: #3a3a3a;
+  }
+  .info-row.making-total .ir-label { color: #888888; }
+  .info-row.making-total .ir-val   { color: #d4a820; }
+
+  /* GST row — charcoal */
+  .info-row.gst-info {
+    background: #2a2a2a;
+  }
+  .info-row.gst-info .ir-label { color: #888888; }
+  .info-row.gst-info .ir-val   { color: #aaaaaa; }
+
+  /* Subtotal row — forest green exactly like screenshot */
+  .info-row.base-info {
+    background: #1a5c1a;
+    border-top: none;
+  }
+  .info-row.base-info .ir-label { color: #88cc88; }
+  .info-row.base-info .ir-val   { color: #ffffff; font-size: 14px; }
+
+  /* Target price reverse calculator */
+  .target-price-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .target-price-wrap .tp-label {
+    color: #aaaaaa;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  .target-price-wrap input {
+    background: #1a1a1a;
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-family: 'Rajdhani', Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    text-align: center;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .target-price-wrap input::-webkit-outer-spin-button,
+  .target-price-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .target-price-wrap input:focus { border-color: #d4a820; }
+  .target-price-wrap input::placeholder { color: #555; font-size: 13px; }
+  .target-grams-display {
+    background: #1a3a1a;
+    border: 1px solid #2a6a2a;
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-family: 'Rajdhani', Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #66dd66;
+    text-align: center;
+    width: 100%;
+    letter-spacing: 0.5px;
+  }
+
+  /* Action buttons + weight input */
+  .actions-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: #2a2a2a;
+    padding: 10px 14px;
+    border-radius: 0 0 4px 4px;
+  }
+  .weight-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #c0301a;
+    border: 2px solid #d4a820;
+    border-radius: 4px;
+    padding: 6px 14px;
+    flex: 1;
+  }
+  .weight-input-wrap .wt-label {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+    letter-spacing: 2px;
+  }
+  .weight-input-wrap input {
+    background: #1a1a1a;
+    color: #ffffff;
+    border: 2px solid #d4a820;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-family: 'Rajdhani', Arial, sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    width: 100%;
+    text-align: center;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .weight-input-wrap input::-webkit-outer-spin-button,
+  .weight-input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .weight-input-wrap input:focus { border-color: #ffffff; }
+  .weight-input-wrap .wt-unit {
+    color: #d4a820;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+  .btn {
+    flex: 1;
+    padding: 11px 6px;
+    font-family: 'Rajdhani', Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .btn-clear { background: #4a4a40; color: #ffffff; }
+  .btn-clear:hover { background: #666658; }
+  .btn-reset { background: #c0301a; color: #ffffff; }
+  .btn-reset:hover { background: #8b1a10; }
+
+  /* Footer */
+  .footer-note {
+    color: #c8aa30;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+    font-family: 'Rajdhani', Arial, sans-serif;
+  }
+
+  /* Responsive */
+  @media (max-width: 520px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .final-total-block { font-size: 26px; padding: 14px 4px; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- 3-column grid — rate inputs are the first row, aligned to each column -->
+<div class="main-grid">
+
+  <!-- ══ Rate inputs — one per column, perfectly aligned ══ -->
+  <div class="rate-cell">
+    <label>22K &nbsp;&#8377; / 10g</label>
+    <input type="number" id="rate-22k" placeholder="e.g. 66000" min="0" step="0.01" oninput="update()" />
+  </div>
+  <div class="rate-cell">
+    <label>18K &nbsp;&#8377; / 10g</label>
+    <input type="number" id="rate-18k" placeholder="e.g. 54000" min="0" step="0.01" oninput="update()" />
+  </div>
+  <div class="rate-cell">
+    <label>Silver &nbsp;&#8377; / 10g</label>
+    <input type="number" id="rate-sil" placeholder="e.g. 900" min="0" step="0.01" oninput="update()" />
+  </div>
+
+  <!-- ══ Column headers ══ -->
+  <div class="col-header">22K Gold</div>
+  <div class="col-header">18K Gold</div>
+  <div class="col-header">Silver</div>
+
+  <!-- ══ Price per gram ══ -->
+  <div class="info-row rate-info">
+    <span class="ir-label">Price / g</span>
+    <span class="ir-val" id="disp-22k">&#8212;</span>
+  </div>
+  <div class="info-row rate-info">
+    <span class="ir-label">Price / g</span>
+    <span class="ir-val" id="disp-18k">&#8212;</span>
+  </div>
+  <div class="info-row rate-info">
+    <span class="ir-label">Price / g</span>
+    <span class="ir-val" id="disp-sil">&#8212;</span>
+  </div>
+
+  <!-- ══ Making charge inputs: % and ₹/g per column ══ -->
+  <div class="making-input-cell">
+    <span class="mc-label">Making</span>
+    <input type="number" id="mc-pct-22k" placeholder="0" min="0" step="0.01" oninput="update()" />
+    <span class="mc-unit">%</span>
+    <span class="mc-sep">+</span>
+    <input type="number" id="mc-pgr-22k" placeholder="0" min="0" step="0.01" oninput="update()" />
+    <span class="mc-unit">&#8377;/g</span>
+    <span class="mc-calc" id="mc-pg-22k">&#8212;</span>
+  </div>
+  <div class="making-input-cell">
+    <span class="mc-label">Making</span>
+    <input type="number" id="mc-pct-18k" placeholder="0" min="0" step="0.01" oninput="update()" />
+    <span class="mc-unit">%</span>
+    <span class="mc-sep">+</span>
+    <input type="number" id="mc-pgr-18k" placeholder="0" min="0" step="0.01" oninput="update()" />
+    <span class="mc-unit">&#8377;/g</span>
+    <span class="mc-calc" id="mc-pg-18k">&#8212;</span>
+  </div>
+  <div class="making-input-cell">
+    <span class="mc-label">Making</span>
+    <input type="number" id="mc-pct-sil" placeholder="0" min="0" step="0.01" oninput="update()" />
+    <span class="mc-unit">%</span>
+    <span class="mc-sep">+</span>
+    <input type="number" id="mc-pgr-sil" placeholder="0" min="0" step="0.01" oninput="update()" />
+    <span class="mc-unit">&#8377;/g</span>
+    <span class="mc-calc" id="mc-pg-sil">&#8212;</span>
+  </div>
+
+  <!-- ══ Final total — what customer pays ══ -->
+  <div class="final-total-block" id="ftotal-22k">
+    <span class="ft-label">Customer Pays</span>
+    &#8212;
+  </div>
+  <div class="final-total-block" id="ftotal-18k">
+    <span class="ft-label">Customer Pays</span>
+    &#8212;
+  </div>
+  <div class="final-total-block" id="ftotal-sil">
+    <span class="ft-label">Customer Pays</span>
+    &#8212;
+  </div>
+
+  <!-- ══ Total making charges for entered weight ══ -->
+  <div class="info-row making-total">
+    <span class="ir-label">Making</span>
+    <span class="ir-val" id="making-total-22k">&#8377;0.00</span>
+  </div>
+  <div class="info-row making-total">
+    <span class="ir-label">Making</span>
+    <span class="ir-val" id="making-total-18k">&#8377;0.00</span>
+  </div>
+  <div class="info-row making-total">
+    <span class="ir-label">Making</span>
+    <span class="ir-val" id="making-total-sil">&#8377;0.00</span>
+  </div>
+
+  <!-- ══ GST applied (3%) ══ -->
+  <div class="info-row gst-info">
+    <span class="ir-label">GST 3%</span>
+    <span class="ir-val" id="gst-22k">&#8377;0.00</span>
+  </div>
+  <div class="info-row gst-info">
+    <span class="ir-label">GST 3%</span>
+    <span class="ir-val" id="gst-18k">&#8377;0.00</span>
+  </div>
+  <div class="info-row gst-info">
+    <span class="ir-label">GST 3%</span>
+    <span class="ir-val" id="gst-sil">&#8377;0.00</span>
+  </div>
+
+  <!-- ══ Base price (no GST, no making charges) ══ -->
+  <div class="info-row base-info">
+    <span class="ir-label">Metal Only</span>
+    <span class="ir-val" id="base-22k">&#8377;0.00</span>
+  </div>
+  <div class="info-row base-info">
+    <span class="ir-label">Metal Only</span>
+    <span class="ir-val" id="base-18k">&#8377;0.00</span>
+  </div>
+  <div class="info-row base-info">
+    <span class="ir-label">Metal Only</span>
+    <span class="ir-val" id="base-sil">&#8377;0.00</span>
+  </div>
+
+
+</div>
+
+<!-- Buttons with weight input in the middle -->
+<div class="actions-bar">
+  <div class="target-price-wrap">
+    <span class="tp-label">22K Target &#8377;</span>
+    <input type="number" id="target-price" placeholder="Enter budget" min="0" step="1" oninput="updateTargetGrams()" />
+    <div class="target-grams-display" id="target-grams">&#8212; g</div>
+  </div>
+  <div class="weight-input-wrap">
+    <span class="wt-label">Wt</span>
+    <input type="number" id="weight" placeholder="0.000" min="0" step="0.001" oninput="update()" />
+    <span class="wt-unit">g</span>
+  </div>
+  <button class="btn btn-reset" onclick="resetAll()">Reset All</button>
+</div>
+
+<div class="footer-note">Developed By Rohan 📞+91 93379 72833</div>
+
+<script>
+
+// GST is always 3%
+var GST_PERCENT = 3;
+
+// Format as Indian Rupees: e.g. 123456.78 → ₹1,23,456.78
+function formatINR(value) {
+  var fixed = Math.abs(value).toFixed(2);
+  var parts = fixed.split('.');
+  var intPart = parts[0];
+  var decPart = parts[1];
+  var result = '';
+  if (intPart.length <= 3) {
+    result = intPart;
+  } else {
+    result = intPart.slice(-3);
+    var remaining = intPart.slice(0, intPart.length - 3);
+    while (remaining.length > 2) {
+      result = remaining.slice(-2) + ',' + result;
+      remaining = remaining.slice(0, remaining.length - 2);
+    }
+    result = remaining + ',' + result;
+  }
+  return '\u20B9' + result + '.' + decPart;
+}
+
+// Format as plain number with commas, no decimals (for big price display)
+function formatNum(value) {
+  var intPart = Math.abs(value).toFixed(0);
+  var result = '';
+  if (intPart.length <= 3) {
+    result = intPart;
+  } else {
+    result = intPart.slice(-3);
+    var remaining = intPart.slice(0, intPart.length - 3);
+    while (remaining.length > 2) {
+      result = remaining.slice(-2) + ',' + result;
+      remaining = remaining.slice(0, remaining.length - 2);
+    }
+    result = remaining + ',' + result;
+  }
+  return '\u20B9' + result;
+}
+
+// Safely read a number from an input, return 0 if empty or invalid
+function getNumber(id) {
+  var value = parseFloat(document.getElementById(id).value);
+  if (isNaN(value) || value < 0) {
+    return 0;
+  }
+  return value;
+}
+
+// Set text content of an element
+function setText(id, text) {
+  document.getElementById(id).textContent = text;
+}
+
+// Clear only the weight field (kept for compatibility)
+function clearWeight() {
+  document.getElementById('weight').value = '';
+  update();
+}
+
+// Reverse calculator: given a target price, how many grams of 22K can you get?
+// Formula: weight = targetPrice / ((rate22g + mcPerGram22) * (1 + GST/100))
+function updateTargetGrams() {
+  var targetPrice = getNumber('target-price');
+  var rate22g = getNumber('rate-22k') / 10;
+  var mcPct22 = getNumber('mc-pct-22k');
+  var mcPgr22 = getNumber('mc-pgr-22k');
+  var mcPerGram22 = (rate22g * mcPct22 / 100) + mcPgr22;
+  var totalPerGram22 = (rate22g + mcPerGram22) * (1 + GST_PERCENT / 100);
+
+  var el = document.getElementById('target-grams');
+  if (targetPrice > 0 && totalPerGram22 > 0) {
+    var grams = targetPrice / totalPerGram22;
+    el.textContent = grams.toFixed(3) + ' g';
+  } else {
+    el.textContent = '\u2014 g';
+  }
+}
+
+// Empty stub — kept for compatibility
+function updateMakingLabels() {}
+
+// Main calculation — runs on every input change
+function update() {
+
+  // Read entered rates and convert to per gram
+  // Gold rates are entered per 10g → divide by 10
+  // Silver rate is entered per 10g → divide by 10
+  var rate22g  = getNumber('rate-22k') / 10;
+  var rate18g  = getNumber('rate-18k') / 10;
+  var rateSilg = getNumber('rate-sil') / 10;
+
+  // Show rate per gram in the display rows
+  document.getElementById('disp-22k').textContent = rate22g  > 0 ? formatINR(rate22g)  : '\u2014';
+  document.getElementById('disp-18k').textContent = rate18g  > 0 ? formatINR(rate18g)  : '\u2014';
+  document.getElementById('disp-sil').textContent = rateSilg > 0 ? formatINR(rateSilg) : '\u2014';
+
+  // Read making charge inputs: percentage and per-gram for each metal
+  var mcPct22  = getNumber('mc-pct-22k');
+  var mcPgr22  = getNumber('mc-pgr-22k');
+  var mcPct18  = getNumber('mc-pct-18k');
+  var mcPgr18  = getNumber('mc-pgr-18k');
+  var mcPctSil = getNumber('mc-pct-sil');
+  var mcPgrSil = getNumber('mc-pgr-sil');
+
+  // Calculate effective making charge per gram for each metal
+  // = (rate × %) / 100  +  fixed ₹/g
+  var mcPerGram22  = (rate22g  * mcPct22  / 100) + mcPgr22;
+  var mcPerGram18  = (rate18g  * mcPct18  / 100) + mcPgr18;
+  var mcPerGramSil = (rateSilg * mcPctSil / 100) + mcPgrSil;
+
+  // Show effective making per gram in the making input row
+  document.getElementById('mc-pg-22k').textContent = rate22g  > 0 ? formatINR(mcPerGram22)  : '\u2014';
+  document.getElementById('mc-pg-18k').textContent = rate18g  > 0 ? formatINR(mcPerGram18)  : '\u2014';
+  document.getElementById('mc-pg-sil').textContent = rateSilg > 0 ? formatINR(mcPerGramSil) : '\u2014';
+
+  // Read the single shared weight
+  var weight = getNumber('weight');
+
+  // ── 22K calculations ──
+  var base22     = weight * rate22g;
+  var making22   = weight * mcPerGram22;
+  var subtotal22 = base22 + making22;
+  var gst22      = subtotal22 * GST_PERCENT / 100;
+  var total22    = subtotal22 + gst22;
+
+  // ── 18K calculations ──
+  var base18     = weight * rate18g;
+  var making18   = weight * mcPerGram18;
+  var subtotal18 = base18 + making18;
+  var gst18      = subtotal18 * GST_PERCENT / 100;
+  var total18    = subtotal18 + gst18;
+
+  // ── Silver calculations ──
+  var baseSil     = weight * rateSilg;
+  var makingSil   = weight * mcPerGramSil;
+  var subtotalSil = baseSil + makingSil;
+  var gstSil      = subtotalSil * GST_PERCENT / 100;
+  var totalSil    = subtotalSil + gstSil;
+
+  // Update Customer Pays blocks
+  var ftotal22El  = document.getElementById('ftotal-22k');
+  var ftotal18El  = document.getElementById('ftotal-18k');
+  var ftotalSilEl = document.getElementById('ftotal-sil');
+
+  ftotal22El.innerHTML  = '<span class="ft-label">Customer Pays</span>' + (total22  > 0 ? formatNum(total22)  : '\u2014');
+  ftotal18El.innerHTML  = '<span class="ft-label">Customer Pays</span>' + (total18  > 0 ? formatNum(total18)  : '\u2014');
+  ftotalSilEl.innerHTML = '<span class="ft-label">Customer Pays</span>' + (totalSil > 0 ? formatNum(totalSil) : '\u2014');
+
+  // Update making total rows
+  setText('making-total-22k', formatINR(making22));
+  setText('making-total-18k', formatINR(making18));
+  setText('making-total-sil', formatINR(makingSil));
+
+  // Update GST rows
+  setText('gst-22k', formatINR(gst22));
+  setText('gst-18k', formatINR(gst18));
+  setText('gst-sil', formatINR(gstSil));
+
+  // Update base price rows (metal only)
+  setText('base-22k', formatINR(base22));
+  setText('base-18k', formatINR(base18));
+  setText('base-sil', formatINR(baseSil));
+
+  // Save state
+  saveState();
+
+  // Keep reverse calculator in sync
+  updateTargetGrams();
+}
+
+// Reset everything and clear localStorage
+function resetAll() {
+  var confirmed = confirm('Reset everything? All rates, making charges and weight will be cleared.');
+  if (!confirmed) {
+    return;
+  }
+
+  document.getElementById('rate-22k').value    = '';
+  document.getElementById('rate-18k').value    = '';
+  document.getElementById('rate-sil').value    = '';
+  document.getElementById('mc-pct-22k').value  = '';
+  document.getElementById('mc-pgr-22k').value  = '';
+  document.getElementById('mc-pct-18k').value  = '';
+  document.getElementById('mc-pgr-18k').value  = '';
+  document.getElementById('mc-pct-sil').value  = '';
+  document.getElementById('mc-pgr-sil').value  = '';
+  document.getElementById('weight').value      = '';
+  document.getElementById('target-price').value = '';
+
+  localStorage.removeItem('jwl_calc_v1');
+  update();
+}
+
+// Save current state to localStorage
+function saveState() {
+  var state = {};
+  state.rate22k   = document.getElementById('rate-22k').value;
+  state.rate18k   = document.getElementById('rate-18k').value;
+  state.rateSil   = document.getElementById('rate-sil').value;
+  state.mcPct22k  = document.getElementById('mc-pct-22k').value;
+  state.mcPgr22k  = document.getElementById('mc-pgr-22k').value;
+  state.mcPct18k  = document.getElementById('mc-pct-18k').value;
+  state.mcPgr18k  = document.getElementById('mc-pgr-18k').value;
+  state.mcPctSil  = document.getElementById('mc-pct-sil').value;
+  state.mcPgrSil  = document.getElementById('mc-pgr-sil').value;
+  state.weight    = document.getElementById('weight').value;
+  localStorage.setItem('jwl_calc_v1', JSON.stringify(state));
+}
+
+// Restore state from localStorage on page load
+function restoreState() {
+  var saved = localStorage.getItem('jwl_calc_v1');
+  if (!saved) {
+    return;
+  }
+  var state = JSON.parse(saved);
+
+  if (state.rate22k)  document.getElementById('rate-22k').value   = state.rate22k;
+  if (state.rate18k)  document.getElementById('rate-18k').value   = state.rate18k;
+  if (state.rateSil)  document.getElementById('rate-sil').value   = state.rateSil;
+  if (state.mcPct22k) document.getElementById('mc-pct-22k').value = state.mcPct22k;
+  if (state.mcPgr22k) document.getElementById('mc-pgr-22k').value = state.mcPgr22k;
+  if (state.mcPct18k) document.getElementById('mc-pct-18k').value = state.mcPct18k;
+  if (state.mcPgr18k) document.getElementById('mc-pgr-18k').value = state.mcPgr18k;
+  if (state.mcPctSil) document.getElementById('mc-pct-sil').value = state.mcPctSil;
+  if (state.mcPgrSil) document.getElementById('mc-pgr-sil').value = state.mcPgrSil;
+  if (state.weight)   document.getElementById('weight').value     = state.weight;
+}
+
+// On page load
+restoreState();
+update();
+
+</script>
+</body>
+</html>
